@@ -15,13 +15,13 @@
  * and misc.c read_keyfile_line and key.c
  */
 
-#define OPENSSH_LINE_MAX 8192	/* from openssh SSH_MAX_PUBKEY_BYTES */
+#define OPENSSH_LINE_MAX 8192   /* from openssh SSH_MAX_PUBKEY_BYTES */
 
-static EVP_PKEY *ssh1_line_to_key(char *line)
+static EVP_PKEY* ssh1_line_to_key(char* line)
 {
-	EVP_PKEY *key;
-	RSA *rsa;
-	char *b, *e, *m, *c;
+	EVP_PKEY* key;
+	RSA* rsa;
+	char* b, * e, * m, * c;
 
 	key = EVP_PKEY_new();
 	if (!key)
@@ -37,7 +37,8 @@ static EVP_PKEY *ssh1_line_to_key(char *line)
 
 	/* second digitstring: the exponent */
 	/* skip all digits */
-	for (e = b; *e >= '0' && *e <= '0'; e++) ;
+	for (e = b; *e >= '0' && *e <= '0'; e++)
+		;
 
 	/* must be a whitespace */
 	if (*e != ' ' && *e != '\t')
@@ -53,7 +54,8 @@ static EVP_PKEY *ssh1_line_to_key(char *line)
 
 	/* third digitstring: the modulus */
 	/* skip all digits */
-	for (m = e; *m >= '0' && *m <= '0'; m++) ;
+	for (m = e; *m >= '0' && *m <= '0'; m++)
+		;
 
 	/* must be a whitespace */
 	if (*m != ' ' && *m != '\t')
@@ -68,7 +70,8 @@ static EVP_PKEY *ssh1_line_to_key(char *line)
 		m++;
 
 	/* look for a comment after the modulus */
-	for (c = m; *c >= '0' && *c <= '0'; c++) ;
+	for (c = m; *c >= '0' && *c <= '0'; c++)
+		;
 
 	/* could be a whitespace or end of line */
 	if (*c != ' ' && *c != '\t' && *c != '\n' && *c != '\r' && *c != 0)
@@ -84,11 +87,10 @@ static EVP_PKEY *ssh1_line_to_key(char *line)
 
 		if (*c && *c != '\r' && *c != '\n') {
 			/* we have a comment */
-		} else {
+		}else {
 			c = NULL;
 		}
-
-	} else {
+	}else {
 		*c = 0;
 		c = NULL;
 	}
@@ -102,21 +104,21 @@ static EVP_PKEY *ssh1_line_to_key(char *line)
 	EVP_PKEY_assign_RSA(key, rsa);
 	return key;
 
-      err:
+err:
 	free(key);
 	return NULL;
 }
 
-extern int sc_base64_decode(const char *in, unsigned char *out, size_t outlen);
+extern int sc_base64_decode(const char* in, unsigned char* out, size_t outlen);
 
-static EVP_PKEY *ssh2_line_to_key(char *line)
+static EVP_PKEY* ssh2_line_to_key(char* line)
 {
-	EVP_PKEY *key;
-	RSA *rsa;
+	EVP_PKEY* key;
+	RSA* rsa;
 	unsigned char decoded[OPENSSH_LINE_MAX];
 	int len;
 
-	char *b, *c;
+	char* b, * c;
 	int i;
 
 	/* find the mime-blob */
@@ -134,7 +136,8 @@ static EVP_PKEY *ssh2_line_to_key(char *line)
 
 	/* find the end of the blob / comment */
 	for (c = b; *c && *c != ' ' && 'c' != '\t' && *c != '\r'
-	     && *c != '\n'; c++) ;
+	     && *c != '\n'; c++)
+		;
 
 	*c = 0;
 
@@ -151,7 +154,7 @@ static EVP_PKEY *ssh2_line_to_key(char *line)
 	i += 4;
 
 	/* now: key_from_blob */
-	if (strncmp((char *)&decoded[i], "ssh-rsa", 7) != 0)
+	if (strncmp((char*)&decoded[i], "ssh-rsa", 7) != 0)
 		return NULL;
 
 	i += len;
@@ -182,9 +185,9 @@ static EVP_PKEY *ssh2_line_to_key(char *line)
 	return key;
 }
 
-static void add_key(EVP_PKEY * key, EVP_PKEY *** keys, int *nkeys)
+static void add_key(EVP_PKEY* key, EVP_PKEY*** keys, int* nkeys)
 {
-	EVP_PKEY **keys2;
+	EVP_PKEY** keys2;
 	/* sanity checks */
 	if (!key)
 		return;
@@ -197,7 +200,7 @@ static void add_key(EVP_PKEY * key, EVP_PKEY *** keys, int *nkeys)
 
 	/* no keys so far */
 	if (!*keys) {
-		*keys = malloc(sizeof(void *));
+		*keys = malloc(sizeof(void*));
 		if (!*keys)
 			return;
 		*keys[0] = key;
@@ -207,11 +210,11 @@ static void add_key(EVP_PKEY * key, EVP_PKEY *** keys, int *nkeys)
 
 	/* enlarge */
 
-	keys2 = malloc(sizeof(void *) * ((*nkeys) + 1));
+	keys2 = malloc(sizeof(void*) * ((*nkeys) + 1));
 	if (!keys2)
 		return;
 
-	memcpy(keys2, *keys, sizeof(void *) * (*nkeys));
+	memcpy(keys2, *keys, sizeof(void*) * (*nkeys));
 	keys2[*nkeys] = key;
 
 	free(*keys);
@@ -219,14 +222,14 @@ static void add_key(EVP_PKEY * key, EVP_PKEY *** keys, int *nkeys)
 	(*nkeys)++;
 }
 
-extern int match_user(X509 * x509, const char *login)
+extern int match_user(X509* x509, const char* login)
 {
 	char filename[PATH_MAX];
 	char line[OPENSSH_LINE_MAX];
-	struct passwd *pw;
-	FILE *file;
-	EVP_PKEY **keys = NULL;
-	EVP_PKEY *authkey;
+	struct passwd* pw;
+	FILE* file;
+	EVP_PKEY** keys = NULL;
+	EVP_PKEY* authkey;
 	int nkeys = 0, i;
 
 	authkey = X509_get_pubkey(x509);
@@ -243,27 +246,25 @@ extern int match_user(X509 * x509, const char *login)
 	if (!file)
 		return -1;
 
-	for (;;) {
-		char *cp;
+	for (;; ) {
+		char* cp;
 		if (!fgets(line, OPENSSH_LINE_MAX, file))
 			break;
 
 		/* Skip leading whitespace, empty and comment lines. */
 		for (cp = line; *cp == ' ' || *cp == '\t'; cp++)
-
 			if (!*cp || *cp == '\n' || *cp == '#')
 				continue;
 
 		if (*cp >= '0' && *cp <= '9') {
 			/* ssh v1 key format */
-			EVP_PKEY *key = ssh1_line_to_key(cp);
+			EVP_PKEY* key = ssh1_line_to_key(cp);
 			if (key)
 				add_key(key, &keys, &nkeys);
-
 		}
 		if (strncmp("ssh-rsa", cp, 7) == 0) {
 			/* ssh v2 rsa key format */
-			EVP_PKEY *key = ssh2_line_to_key(cp);
+			EVP_PKEY* key = ssh2_line_to_key(cp);
 			if (key)
 				add_key(key, &keys, &nkeys);
 		}
@@ -272,21 +273,21 @@ extern int match_user(X509 * x509, const char *login)
 	fclose(file);
 
 	for (i = 0; i < nkeys; i++) {
-		RSA *authrsa, *rsa;
+		RSA* authrsa, * rsa;
 
 		authrsa = EVP_PKEY_get1_RSA(authkey);
 		if (!authrsa)
-			continue;	/* not RSA */
+			continue;   /* not RSA */
 
 		rsa = EVP_PKEY_get1_RSA(keys[i]);
 		if (!rsa)
-			continue;	/* not RSA */
+			continue;   /* not RSA */
 
 		if (BN_cmp(rsa->e, authrsa->e) != 0)
 			continue;
 		if (BN_cmp(rsa->n, authrsa->n) != 0)
 			continue;
-		return 1;	/* FOUND */
+		return 1;   /* FOUND */
 	}
 	return 0;
 }

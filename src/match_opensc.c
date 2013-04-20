@@ -11,9 +11,9 @@
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 
-static void add_cert(X509 * cert, X509 *** certs, int *ncerts)
+static void add_cert(X509* cert, X509*** certs, int* ncerts)
 {
-	X509 **certs2;
+	X509** certs2;
 	/* sanity checks */
 	if (!cert)
 		return;
@@ -26,7 +26,7 @@ static void add_cert(X509 * cert, X509 *** certs, int *ncerts)
 
 	/* no certs so far */
 	if (!*certs) {
-		*certs = malloc(sizeof(void *));
+		*certs = malloc(sizeof(void*));
 		if (!*certs)
 			return;
 		*certs[0] = cert;
@@ -36,11 +36,11 @@ static void add_cert(X509 * cert, X509 *** certs, int *ncerts)
 
 	/* enlarge */
 
-	certs2 = malloc(sizeof(void *) * ((*ncerts) + 1));
+	certs2 = malloc(sizeof(void*) * ((*ncerts) + 1));
 	if (!certs2)
 		return;
 
-	memcpy(certs2, *certs, sizeof(void *) * (*ncerts));
+	memcpy(certs2, *certs, sizeof(void*) * (*ncerts));
 	certs2[*ncerts] = cert;
 
 	free(*certs);
@@ -48,13 +48,13 @@ static void add_cert(X509 * cert, X509 *** certs, int *ncerts)
 	(*ncerts)++;
 }
 
-extern int match_user(X509 * x509, const char *login)
+extern int match_user(X509* x509, const char* login)
 {
 	char filename[PATH_MAX];
-	struct passwd *pw;
-	X509 **certs;
+	struct passwd* pw;
+	X509** certs;
 	int ncerts, i, rc;
-	BIO *in;
+	BIO* in;
 
 	if (!x509)
 		return -1;
@@ -67,7 +67,7 @@ extern int match_user(X509 * x509, const char *login)
 		return -1;
 
 	snprintf(filename, PATH_MAX, "%s/.eid/authorized_certificates",
-		 pw->pw_dir);
+	         pw->pw_dir);
 
 	in = BIO_new(BIO_s_file());
 	if (!in)
@@ -81,8 +81,8 @@ extern int match_user(X509 * x509, const char *login)
 
 	ncerts = 0;
 	certs = NULL;
-	for (;;) {
-		X509 *cert = PEM_read_bio_X509(in, NULL, 0, NULL);
+	for (;; ) {
+		X509* cert = PEM_read_bio_X509(in, NULL, 0, NULL);
 		if (cert)
 			add_cert(cert, &certs, &ncerts);
 		else
@@ -93,7 +93,7 @@ extern int match_user(X509 * x509, const char *login)
 
 	for (i = 0; i < ncerts; i++) {
 		if (X509_cmp(certs[i], x509) == 0)
-			return 1;	/* FOUND */
+			return 1;   /* FOUND */
 	}
 	return 0;
 }

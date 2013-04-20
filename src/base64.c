@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-extern int sc_base64_decode(const char *in, unsigned char *out, size_t outlen);
+extern int sc_base64_decode(const char* in, unsigned char* out, size_t outlen);
 
 static const unsigned char base64_table[66] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" "0123456789+/=";
@@ -48,7 +48,7 @@ static const unsigned char bin_table[128] = {
 };
 
 #if 0
-static void to_base64(unsigned int i, unsigned char *out, unsigned int fillers)
+static void to_base64(unsigned int i, unsigned char* out, unsigned int fillers)
 {
 	unsigned int s = 18, c;
 
@@ -63,10 +63,10 @@ static void to_base64(unsigned int i, unsigned char *out, unsigned int fillers)
 }
 #endif
 
-static int from_base64(const char *in, unsigned int *out, int *skip)
+static int from_base64(const char* in, unsigned int* out, int* skip)
 {
 	unsigned int res = 0, c, s = 18;
-	const char *in0 = in;
+	const char* in0 = in;
 
 	for (c = 0; c < 4; c++, in++) {
 		unsigned char b;
@@ -77,12 +77,12 @@ static int from_base64(const char *in, unsigned int *out, int *skip)
 		if (k == 0 && c == 0)
 			return 0;
 		b = bin_table[k];
-		if (b == 0xC0)	/* '=' */
+		if (b == 0xC0)  /* '=' */
 			break;
 		switch (b) {
-		case 0xD0:	/* '\n' or '\r' */
-			c--;
-			continue;
+			case 0xD0: /* '\n' or '\r' */
+				c--;
+				continue;
 		}
 		if (b > 0x3f)
 			return -1;
@@ -96,8 +96,8 @@ static int from_base64(const char *in, unsigned int *out, int *skip)
 }
 
 #if 0
-int sc_base64_encode(const unsigned char *in, size_t len, unsigned char *out,
-		     size_t outlen, size_t linelength)
+int sc_base64_encode(const unsigned char* in, size_t len, unsigned char* out,
+                     size_t outlen, size_t linelength)
 {
 	unsigned int chars = 0;
 	size_t i, c;
@@ -150,7 +150,7 @@ int sc_base64_encode(const unsigned char *in, size_t len, unsigned char *out,
 }
 #endif
 
-int sc_base64_decode(const char *in, unsigned char *out, size_t outlen)
+int sc_base64_decode(const char* in, unsigned char* out, size_t outlen)
 {
 	int len = 0, r, skip;
 	unsigned int i;
