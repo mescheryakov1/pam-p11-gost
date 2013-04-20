@@ -30,6 +30,7 @@
 #include <openssl/x509.h>
 
 #include "pkcs11/rtpkcs11.h"
+#include "pam_helper.h"
 
 /* We have to make this definitions before we include the pam header files! */
 #define PAM_SM_AUTH
@@ -111,31 +112,19 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t* pamh, int flags, int argc, cons
 		return PAM_AUTHINFO_UNAVAIL;
 	}
 	pkcsGetFunctionList = (CK_C_GetFunctionList)dlsym(pkcs11Module, "C_GetFunctionList");
-	if (!pkcsGetFunctionList) {
-		pam_syslog(pamh, LOG_ERR, "failed to load PKCS#11 library");
-		rv = PAM_AUTHINFO_UNAVAIL;
-		goto libFinish;
-	}
+	PKCS_checkerr(rv, "failed to load PKCS#11 library", libFinish)
 	pkcsGetFunctionList(&pkcs);
+
 	rv = pkcs->C_Initialize(NULL);
-	if (rv != CKR_OK) {
-		pam_syslog(pamh, LOG_ERR, "C_Initialize failed with error 0x%08X", rv);
-		rv = PAM_AUTHINFO_UNAVAIL;
-		goto libFinish;
-	}
+	PKCS_checkerr_ex(rv, pamh, "C_Initialize", libFinish);
 	rv = pkcs->C_GetSlotList(CK_TRUE, NULL_PTR, &slotCount);
-	if (rv != CKR_OK) {
-		pam_syslog(pamh, LOG_ERR, "C_GetSlotList failed with error 0x%08X", rv);
-		rv = PAM_AUTHINFO_UNAVAIL;
-		goto pkcs11Finish;
-	}
-	if (slotCount == 0) {
-		pam_syslog(pamh, LOG_ERR, "no token available");
-		rv = PAM_AUTHINFO_UNAVAIL;
-		goto pkcs11Finish;
-	}
-	if (slotCount > 1) {
-		pam_syslog(pamh, LOG_ERR, "use only one token");
+	PKCS_checkerr_ex(rv, pamh, "C_GetSlotList", pkcs11Finish);
+
+	if (slotCount != 1){
+		if (slotCount == 0)
+			pam_syslog(pamh, LOG_ERR, "no token available");
+		else
+			pam_syslog(pamh, LOG_ERR, "use only one token");
 		rv = PAM_AUTHINFO_UNAVAIL;
 		goto pkcs11Finish;
 	}
@@ -146,24 +135,15 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t* pamh, int flags, int argc, cons
 		goto pkcs11Finish;
 	}
 	rv = pkcs->C_GetSlotList(CK_TRUE, slotIds, &slotCount);
-	if (rv != CKR_OK) {
-		pam_syslog(pamh, LOG_ERR, "C_GetSlotList failed with error 0x%08X", rv);
-		return PAM_AUTHINFO_UNAVAIL;
-	}
+	PKCS_checkerr_ex(rv, pamh, "C_GetSlotList", pkcs11Finish);
+
 	slot = slotIds[0];
 	rv = pkcs->C_GetTokenInfo(slot, &tokenInfo);
-	if (rv != CKR_OK) {
-		pam_syslog(pamh, LOG_ERR, "C_GetTokenInfo failed with error 0x%08X", rv);
-		return PAM_AUTHINFO_UNAVAIL;
-	}
+	PKCS_checkerr_ex(rv, pamh, "C_GetTokenInfo", pkcs11Finish);
 
 
 	rv = pkcs->C_OpenSession(slot, (CKF_SERIAL_SESSION | CKF_RW_SESSION), NULL, NULL, &session);
-	if (rv != CKR_OK) {
-		pam_syslog(pamh, LOG_ERR, "C_OpenSession failed with error 0x%08X", rv);
-		rv = PAM_AUTHINFO_UNAVAIL;
-		goto pkcs11Finish;
-	}
+	PKCS_checkerr_ex(rv, pamh, "C_OpenSession", pkcs11Finish);
 
 	// get token PIN via PAM
 	msgp[0] = &msg;
@@ -175,19 +155,15 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t* pamh, int flags, int argc, cons
 		msg.msg_style = PAM_PROMPT_ECHO_OFF;
 		msg.msg = password_prompt;
 		rv = pam_get_item(pamh, PAM_CONV, (const void**)&conv);
-		if (rv != PAM_SUCCESS) {
-			rv = PAM_AUTHINFO_UNAVAIL;
-			goto pkcs11SessionFinish;
-		}
+		PAM_checkerr(rv, pamh, "failed to get password from user", pkcs11SessionFinish);
+
 		if ((conv == NULL) || (conv->conv == NULL)) {
 			rv = PAM_AUTHINFO_UNAVAIL;
 			goto pkcs11SessionFinish;
 		}
 		rv = conv->conv(1, (const struct pam_message**)msgp, &resp, conv->appdata_ptr);
-		if (rv != PAM_SUCCESS) {
-			rv = PAM_AUTHINFO_UNAVAIL;
-			goto pkcs11SessionFinish;
-		}
+		PAM_checkerr(rv, pamh, "failed to get password from user", pkcs11SessionFinish);
+
 		if ((resp == NULL) || (resp[0].resp == NULL)) {
 			rv = PAM_AUTHINFO_UNAVAIL;
 			goto pkcs11SessionFinish;
