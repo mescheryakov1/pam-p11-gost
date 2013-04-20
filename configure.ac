@@ -89,7 +89,6 @@ AC_FUNC_STAT
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([memset strdup strerror])
 
-PKG_CHECK_MODULES([LIBP11], [libp11 >= 0.2.4],, [AC_MSG_ERROR([libp11 is required])])
 PKG_CHECK_MODULES(
 	[OPENSSL],
 	[libcrypto >= 0.9.7],

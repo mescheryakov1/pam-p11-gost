@@ -2,8 +2,8 @@ MAINTAINERCLEANFILES = $(srcdir)/Makefile.in
 
 EXTRA_DIST = test.c
 
-AM_CFLAGS = $(OPENSSL_CFLAGS) $(LIBP11_CFLAGS) $(PAM_CFLAGS)
-LIBS = $(OPENSSL_LIBS) $(LIBP11_LIBS) $(PAM_LIBS)
+AM_CFLAGS = $(OPENSSL_CFLAGS) $(PAM_CFLAGS)
+LIBS = $(OPENSSL_LIBS) $(PAM_LIBS)
 AM_LDFLAGS = -module -avoid-version -shared -no-undefined \
 	-export-symbols "$(srcdir)/pam_p11.exports"
 
