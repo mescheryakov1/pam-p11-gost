@@ -26,7 +26,6 @@
 #include <stddef.h>
 
 #include <openssl/bio.h>
-//#include <openssl/cms.h>
 #include <openssl/err.h>
 #include <openssl/engine.h>
 #include <openssl/pem.h>
@@ -356,27 +355,27 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t* pamh, int flags, int argc, cons
 		goto pkcs11SessionFinish;
 	}
 	const EVP_MD* md = EVP_get_digestbyname("md_gost94");
-	if (!md){
+	if (!md) {
 		pam_syslog(pamh, LOG_ERR, "failed to get gost digest");
 		goto pkcs11SessionFinish;
 	}
 	EVP_MD_CTX* mdctx = EVP_MD_CTX_create();
-	if (!mdctx){
+	if (!mdctx) {
 		pam_syslog(pamh, LOG_ERR, "failed to init gost digest");
 		goto pkcs11SessionFinish;
 	}
 	rv = EVP_VerifyInit_ex(mdctx, md, gostEngine);
-	if (rv == 0){
+	if (rv == 0) {
 		pam_syslog(pamh, LOG_ERR, "EVP_VerifyInit_ex failed");
 		goto pkcs11SessionFinish;
 	}
 	rv = EVP_VerifyUpdate(mdctx, randomData, RANDOM_SIZE);
-	if (rv == 0){
+	if (rv == 0) {
 		pam_syslog(pamh, LOG_ERR, "EVP_VerifyUpdate failed");
 		goto pkcs11SessionFinish;
 	}
 	rv = EVP_VerifyFinal(mdctx, signature, signatureLength, publicKey);
-	if (rv == -1){
+	if (rv == -1) {
 		pam_syslog(pamh, LOG_ERR, "EVP_VerifyFinal failed");
 		goto pkcs11SessionFinish;
 	}
