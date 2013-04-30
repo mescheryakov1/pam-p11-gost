@@ -3,8 +3,8 @@ AC_PREREQ(2.60)
 
 define([PACKAGE_VERSION_MAJOR], [0])
 define([PACKAGE_VERSION_MINOR], [1])
-define([PACKAGE_VERSION_FIX], [5])
-define([PACKAGE_SUFFIX], [-svn])
+define([PACKAGE_VERSION_FIX], [6])
+define([PACKAGE_SUFFIX], [-aktiv])
 
 AC_INIT([pam_p11],[PACKAGE_VERSION_MAJOR.PACKAGE_VERSION_MINOR.PACKAGE_VERSION_FIX[]PACKAGE_SUFFIX])
 AC_CONFIG_AUX_DIR([.])
@@ -91,11 +91,11 @@ AC_CHECK_FUNCS([memset strdup strerror])
 
 PKG_CHECK_MODULES(
 	[OPENSSL],
-	[libcrypto >= 0.9.7],
+	[libcrypto >= 1.0.0],
 	,
 	[PKG_CHECK_MODULES(
 		[OPENSSL],
-		[openssl >= 0.9.7],
+		[openssl >= 1.0.0],
 		,
 		[AC_CHECK_LIB(
 			[crypto],
@@ -196,8 +196,6 @@ pamdir                   ${pamdir}
 
 PAM_CFLAGS:              ${PAM_CFLAGS}
 PAM_LIBS:                ${PAM_LIBS}
-LIBP11_CFLAGS:           ${LIBP11_CFLAGS}
-LIBP11_LIBS:             ${LIBP11_LIBS}
 OPENSSL_CFLAGS:          ${OPENSSL_CFLAGS}
 OPENSSL_LIBS:            ${OPENSSL_LIBS}
 
