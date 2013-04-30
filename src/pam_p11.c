@@ -122,7 +122,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t* pamh, int flags, int argc, cons
 	CK_ULONG certificateIdLength;
 
 	CK_ULONG privateKeyCount = 0;
-	CK_ULONG privateKeySize = 0;
 	CK_OBJECT_HANDLE privateKeyObjects[kMaxObjectCount];
 	CK_OBJECT_HANDLE privateKeyHandle;
 
