@@ -1,0 +1,3 @@
+[submodule "pkcs11"]
+	path = pkcs11
+	url = https://github.com/romanovskiy-k/pkcs11.git

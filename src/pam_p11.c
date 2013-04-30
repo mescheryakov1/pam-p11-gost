@@ -32,7 +32,7 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
-#include "pkcs11/rtpkcs11.h"
+#include "../pkcs11/rtpkcs11.h"
 #include "pam_helper.h"
 
 /* We have to make this definitions before we include the pam header files! */
